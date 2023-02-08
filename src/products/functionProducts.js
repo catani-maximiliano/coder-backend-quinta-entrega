@@ -5,7 +5,20 @@ if (!fs.existsSync(path)) {
   fs.writeFileSync(path, JSON.stringify([], null, "\t"));
 }
 
+async function getProducts(){
+  try {
+      const data = await fs.promises.readFile(path, "utf-8");
+      const jsonData = JSON.parse(data);
+      return jsonData;
+  } 
+  catch (error) {
+      return error;
+  }
+}
+
 async function getAllProductsFromDB(limit) {
+
+
   return new Promise((resolve, reject) => {
     fs.readFile(path, "utf8", (err, data) => {
       if (err) {
@@ -133,6 +146,7 @@ async function deleteProductFromDB(pid) {
 }
 
 module.exports = {
+  getProducts,
   getProductFromDB,
   getAllProductsFromDB,
   addProductToDB,

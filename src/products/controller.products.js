@@ -4,17 +4,16 @@ const uuid = require('uuid');
 const productsRouter = Router();
 const { getProductFromDB, getAllProductsFromDB, addProductToDB, updateProductInDB, deleteProductFromDB  } = require('./functionProducts');
 
-io.on('connection', function (socket) {
-    socket.emit('product-update', products);
-  });
 //Ok
 // Ruta raíz GET / para listar todos los productos
 productsRouter.get('/', async (req, res) => {
     try {
         const limit = req.query.limit;
+
         // Obtener productos de la base de datos
         const products = await getAllProductsFromDB(limit);
-        io.emit('product-update', products);
+        const getAll =  await getAllProductsFromDB();
+        global.io.emit('statusProductsList', getAll);
         res.status(200).json(products);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -28,7 +27,6 @@ productsRouter.get('/:pid', async (req, res) => {
         const pid = req.params.pid;
         // Obtener producto de la base de datos
         const product = await getProductFromDB(pid);
-        io.emit('product-update', products);
         res.status(200).json(product);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -61,7 +59,10 @@ productsRouter.post('/', async (req, res) => {
         }
         // Agregar producto a la base de datos
         await addProductToDB(newProduct);
-        io.emit('product-update', products);
+
+        const getAll =  await getAllProductsFromDB();
+        global.io.emit('statusProductsList', getAll);
+
         res.status(200).json({ message: 'Producto agregado exitosamente', product: newProduct });
     } catch (error) {
         if(error.error){
@@ -90,7 +91,10 @@ productsRouter.put('/:pid', async (req, res) => {
         }
         // Actualizar producto en la base de datos
         await updateProductInDB(pid, product);
-        io.emit('product-update', products);
+
+        const getAll =  await getAllProductsFromDB();
+        global.io.emit('statusProductsList', getAll);
+
         res.json({ message: 'Producto actualizado exitosamente', product });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -104,7 +108,10 @@ productsRouter.delete('/:pid', async (req, res) => {
         const pid = req.params.pid;
         // Eliminar producto de la base de datos
         await deleteProductFromDB(pid);
-        io.emit('product-update', products);
+
+        const getAll =  await getAllProductsFromDB();
+        global.io.emit('statusProductsList', getAll);
+        
         res.status(200).json({ message: 'Producto eliminado exitosamente' });
     } catch (error) {
         res.status(500).json({ message: error.message });
